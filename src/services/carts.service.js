@@ -68,6 +68,7 @@ class CartService {
       throw new Error("Error updating product quantity in cart");
     }
   }
+    
 
   async removeProduct(cartId, productId) {
     try {

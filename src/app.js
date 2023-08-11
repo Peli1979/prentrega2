@@ -21,15 +21,17 @@ import { usersRouter } from './routes/users.router.js';
 import { connectMongo } from './utils/connect-db.js';
 import { connectSocketServer } from './utils/connect-socket.js';
 import { iniPassport } from './utils/passport.js';
-
+import dotenv from "dotenv";
 import { entorno } from './config.js';
+import nodemailer from "nodemailer";
 
 // console.log(entorno);
 
 // CONFIG BASICAS Y CONEXION A BD
 const app = express();
 // entorno.PORT
-const PORT = 8080
+//const PORT = 8080
+const PORT = entorno.PORT;
 const fileStore = FileStore(session);
 
 connectMongo();
@@ -94,6 +96,7 @@ app.get('/cerrate', (req, res) => {
   res.send('cerrando todo :(');
   process.exit();
 });
+dotenv.config();
 
 function operacionCompleja() {
   let result = 0;
@@ -113,6 +116,41 @@ app.get('/complex', (req, res) => {
   });
 });
 
+
+const transport = nodemailer.createTransport({
+  service: "gmail",
+  port: 587,
+  auth: {
+    user: process.env.GOOGLE_EMAIL,
+    pass: process.env.GOOGLE_PASS,
+  },
+});
+
+app.get("/mail", async (req, res) => {
+  const result = await transport.sendMail({
+    from: process.env.GOOGLE_EMAIL,
+    to: "martinrozada@gmail.com",
+    subject: "Test camada 40340",
+    html: `
+              <div>
+                  <h1>La mejor camada 40340!</h1>
+                  <p>Hola Martin!!!!</p>
+                  <img src="cid:image1" />
+              </div>
+          `,
+    attachments: [
+      {
+        filename: "img1.jpg",
+        path: "C:/Users/marti/OneDrive/Escritorio/CoderBackend/Prentrega2/public/images/img2.jpg",
+        cid: "image1",
+      },
+    ],
+  });
+
+  console.log(result);
+  res.send("Email sent");
+});
+
 app.get('*', (req, res) => {
   console.log(req.signedCookies);
   return res.status(404).json({
@@ -121,3 +159,4 @@ app.get('*', (req, res) => {
     data: {},
   });
 });
+
